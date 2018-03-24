@@ -2,8 +2,8 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import StyleSheet from './StyleSheet'
-import ServerStyleSheet from './ServerStyleSheet'
 import { CONTEXT_KEY } from '../constants'
+import ServerStyleSheet from './ServerStyleSheet'
 
 /* this error is used for makeStyleTag */
 const targetPropErr =

@@ -1,7 +1,8 @@
 // @flow
-
+/* eslint-disable react/prop-types */
 import { Component, createElement } from 'react'
 import PropTypes from 'prop-types'
+import { getRegisteredStyles } from '@emotion/utils'
 
 import type { Theme } from './ThemeProvider'
 import createWarnTooManyClasses from '../utils/createWarnTooManyClasses'
@@ -14,10 +15,10 @@ import determineTheme from '../utils/determineTheme'
 import escape from '../utils/escape'
 import type { RuleSet, Target } from '../types'
 import { CONTEXT_KEY } from '../constants'
-
-import { CHANNEL, CHANNEL_NEXT, CONTEXT_CHANNEL_SHAPE } from './ThemeProvider'
 import StyleSheet from './StyleSheet'
 import ServerStyleSheet from './ServerStyleSheet'
+
+import { CHANNEL, CHANNEL_NEXT, CONTEXT_CHANNEL_SHAPE } from './ThemeProvider'
 
 // HACK for generating all static styles without needing to allocate
 // an empty execution context every single time...
@@ -63,7 +64,6 @@ export default (ComponentStyle: Function, constructWithOptions: Function) => {
     attrs = {}
     state = {
       theme: null,
-      generatedClassName: '',
     }
     unsubscribeId: number = -1
 
@@ -90,101 +90,14 @@ export default (ComponentStyle: Function, constructWithOptions: Function) => {
       return { ...context, ...this.attrs }
     }
 
-    generateAndInjectStyles(theme: any, props: any) {
-      const { attrs, componentStyle, warnTooManyClasses } = this.constructor
-      const styleSheet = this.context[CONTEXT_KEY] || StyleSheet.master
-
-      // staticaly styled-components don't need to build an execution context object,
-      // and shouldn't be increasing the number of class names
-      if (componentStyle.isStatic && attrs === undefined) {
-        return componentStyle.generateAndInjectStyles(
-          STATIC_EXECUTION_CONTEXT,
-          styleSheet
-        )
-      } else {
-        const executionContext = this.buildExecutionContext(theme, props)
-        const className = componentStyle.generateAndInjectStyles(
-          executionContext,
-          styleSheet
-        )
-
-        if (
-          process.env.NODE_ENV !== 'production' &&
-          warnTooManyClasses !== undefined
-        ) {
-          warnTooManyClasses(className)
-        }
-
-        return className
-      }
-    }
-
     componentWillMount() {
-      const { componentStyle } = this.constructor
       const styledContext = this.context[CHANNEL_NEXT]
-
-      // If this is a staticaly-styled component, we don't need to the theme
-      // to generate or build styles.
-      if (componentStyle.isStatic) {
-        const generatedClassName = this.generateAndInjectStyles(
-          STATIC_EXECUTION_CONTEXT,
-          this.props
-        )
-        this.setState({ generatedClassName })
-        // If there is a theme in the context, subscribe to the event emitter. This
-        // is necessary due to pure components blocking context updates, this circumvents
-        // that by updating when an event is emitted
-      } else if (styledContext !== undefined) {
+      if (styledContext !== undefined) {
         const { subscribe } = styledContext
-        this.unsubscribeId = subscribe(nextTheme => {
-          // This will be called once immediately
-          const theme = determineTheme(
-            this.props,
-            nextTheme,
-            this.constructor.defaultProps
-          )
-          const generatedClassName = this.generateAndInjectStyles(
-            theme,
-            this.props
-          )
-
-          this.setState({ theme, generatedClassName })
+        this.unsubscribeId = subscribe(theme => {
+          this.setState({ theme })
         })
-      } else {
-        // eslint-disable-next-line react/prop-types
-        const theme = this.props.theme || {}
-        const generatedClassName = this.generateAndInjectStyles(
-          theme,
-          this.props
-        )
-        this.setState({ theme, generatedClassName })
       }
-    }
-
-    componentWillReceiveProps(nextProps: {
-      theme?: Theme,
-      [key: string]: any,
-    }) {
-      // If this is a staticaly-styled component, we don't need to listen to
-      // props changes to update styles
-      const { componentStyle } = this.constructor
-      if (componentStyle.isStatic) {
-        return
-      }
-
-      this.setState(oldState => {
-        const theme = determineTheme(
-          nextProps,
-          oldState.theme,
-          this.constructor.defaultProps
-        )
-        const generatedClassName = this.generateAndInjectStyles(
-          theme,
-          nextProps
-        )
-
-        return { theme, generatedClassName }
-      })
     }
 
     componentWillUnmount() {
@@ -192,22 +105,53 @@ export default (ComponentStyle: Function, constructWithOptions: Function) => {
     }
 
     render() {
-      // eslint-disable-next-line react/prop-types
-      const { innerRef } = this.props
-      const { generatedClassName } = this.state
-      const { styledComponentId, target } = this.constructor
+      const theme = determineTheme(
+        this.props,
+        this.state.theme,
+        this.constructor.defaultProps
+      )
 
-      const isTargetTag = isTag(target)
-
-      const className = [
-        // eslint-disable-next-line react/prop-types
-        this.props.className,
+      const {
+        attrs,
+        componentStyle,
         styledComponentId,
-        this.attrs.className,
-        generatedClassName,
-      ]
-        .filter(Boolean)
-        .join(' ')
+        target,
+      } = this.constructor
+      const styleSheet = this.context[CONTEXT_KEY] || StyleSheet.master
+
+      const registeredStylesFromClassName = []
+      let className = ''
+      if (typeof this.props.className === 'string') {
+        className += getRegisteredStyles(
+          styleSheet.registered,
+          registeredStylesFromClassName,
+          this.props.className
+        )
+      }
+      className += `${styledComponentId} `
+      // staticaly styled-components don't need to build an execution context object,
+      // and shouldn't be increasing the number of class names
+
+      if (
+        componentStyle.isStatic &&
+        attrs === undefined &&
+        registeredStylesFromClassName.length === 0
+      ) {
+        className += componentStyle.generateAndInjectStyles(
+          STATIC_EXECUTION_CONTEXT,
+          styleSheet
+        )
+      } else {
+        const executionContext = this.buildExecutionContext(theme, this.props)
+        className += componentStyle.generateAndInjectStyles(
+          executionContext,
+          styleSheet,
+          registeredStylesFromClassName
+        )
+      }
+
+      const { innerRef } = this.props
+      const isTargetTag = isTag(target)
 
       const baseProps = {
         ...this.attrs,

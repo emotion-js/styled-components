@@ -2,6 +2,27 @@
 # yarn lockfile v1
 
 
+"@emotion/cache@^0.4.1":
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/@emotion/cache/-/cache-0.4.1.tgz#b279251b3e5a165206efa91f5700f103fff18225"
+  dependencies:
+    "@emotion/sheet" "^0.2.0"
+    "@emotion/types" "^0.2.3"
+    "@emotion/utils" "^0.4.1"
+    emotion-utils "^9.0.1"
+
+"@emotion/sheet@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@emotion/sheet/-/sheet-0.2.0.tgz#f53f38eee4ddb03db76916ff168c75c87f4e052e"
+
+"@emotion/types@^0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@emotion/types/-/types-0.2.3.tgz#83eb6b0d1d9c2a17cebe84cbc3547cb394f7225c"
+
+"@emotion/utils@^0.4.1":
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/@emotion/utils/-/utils-0.4.1.tgz#16be45b13e34ee8924005fa567a3131fefa9941e"
+
 "@types/node@*":
   version "9.3.0"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-9.3.0.tgz#3a129cda7c4e5df2409702626892cb4b96546dd5"
@@ -2365,6 +2386,10 @@ electron-to-chromium@^1.3.30:
 elegant-spinner@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/elegant-spinner/-/elegant-spinner-1.0.1.tgz#db043521c95d7e303fd8f345bedc3349cfb0729e"
+
+emotion-utils@^9.0.1, emotion-utils@^9.1.0:
+  version "9.1.0"
+  resolved "https://registry.yarnpkg.com/emotion-utils/-/emotion-utils-9.1.0.tgz#7484dbf18f3b1dc1de68559d1ff35a74caa998dc"
 
 encodeurl@~1.0.1:
   version "1.0.2"

@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>Basic Example</title>
-    <!-- SSR:CSS -->
-  </head>
-  <body>
-    <h1>Basic Example</h1>
-    <div id="container"><!-- SSR:HTML --></div>
-    <script src="https://unpkg.com/react@15.3.2/dist/react.min.js"></script>
-    <script src="https://unpkg.com/react-dom@15.3.2/dist/react-dom.min.js"></script>
-    <script src="https://unpkg.com/react-dom@15.3.2/dist/react-dom-server.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.24/browser.min.js"></script>
-    <script src="/styled-components.js"></script>
-    <script type="text/babel">
+
+<head>
+  <meta charset="utf-8">
+  <title>Basic Example</title>
+  <!-- SSR:CSS -->
+</head>
+
+<body>
+  <h1>Basic Example</h1>
+  <div id="container">
+    <!-- SSR:HTML -->
+  </div>
+  <script src="https://unpkg.com/react@15.3.2/dist/react.min.js"></script>
+  <script src="https://unpkg.com/react-dom@15.3.2/dist/react-dom.min.js"></script>
+  <script src="https://unpkg.com/react-dom@15.3.2/dist/react-dom-server.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.24/browser.min.js"></script>
+  <script src="/styled-components.js"></script>
+  <script type="text/babel">
       styled.injectGlobal`
     body {
       font-family: sans-serif;
@@ -35,12 +39,16 @@
     padding: 4em;
     background: papayawhip;
   `;
+  const BetterTitle = styled.default(Title)`
+  color:hotpink;
+  `
+
 
       class Example extends React.Component {
         render() {
           return (
             <Wrapper>
-              <Title>Hello World, this is my first styled component!</Title>
+              <BetterTitle>Hello World, this is my first styled component!</BetterTitle>
             </Wrapper>
           )
         }
@@ -51,5 +59,6 @@
         document.getElementById('container')
       );
     </script>
-  </body>
+</body>
+
 </html>

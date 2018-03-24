@@ -39,10 +39,6 @@ export default class ServerStyleSheet {
 
   complete() {
     if (!this.closed) {
-      /* Remove closed StyleSheets from the master sheet */
-      const index = this.masterSheet.clones.indexOf(this.instance)
-      this.masterSheet.clones.splice(index, 1)
-      this.closed = true
     }
   }
 
@@ -84,7 +80,7 @@ export default class ServerStyleSheet {
       const { tags } = instance
       let html = ''
 
-      /* retrieve html for each new style tag */
+      /* r etrieve html for each new style tag */
       for (; instanceTagIndex < tags.length; instanceTagIndex += 1) {
         const tag = tags[instanceTagIndex]
         html += tag.toHTML(streamAttr)

@@ -1,10 +1,9 @@
 // @flow
 import hashStr from '../vendor/glamor/hash'
-
 import type { RuleSet, NameGenerator, Flattener, Stringifier } from '../types'
-import StyleSheet from './StyleSheet'
 import { IS_BROWSER } from '../constants'
 import isStyledComponent from '../utils/isStyledComponent'
+import StyleSheet from './StyleSheet'
 
 const areStylesCacheable = IS_BROWSER
 
@@ -57,47 +56,45 @@ export default (
     componentId: string
     isStatic: boolean
     lastClassName: ?string
-
-    constructor(rules: RuleSet, attrs?: Object, componentId: string) {
+    static generateName: string => string
+    constructor(rules: RuleSet, attrs?: Object) {
       this.rules = rules
       this.isStatic = !isHRMEnabled && isStaticRules(rules, attrs)
-      this.componentId = componentId
-
-      if (!StyleSheet.master.hasId(componentId)) {
-        const placeholder =
-          process.env.NODE_ENV !== 'production' ? [`.${componentId} {}`] : []
-
-        StyleSheet.master.deferredInject(componentId, placeholder)
-      }
     }
 
-    /*
-     * Flattens a rule set into valid CSS
-     * Hashes it, wraps the whole chunk in a .hash1234 {}
-     * Returns the hash to be injected on render()
-     * */
-    generateAndInjectStyles(executionContext: Object, styleSheet: StyleSheet) {
-      const { isStatic, componentId, lastClassName } = this
-      if (areStylesCacheable && isStatic && lastClassName !== undefined) {
+    generateAndInjectStyles(
+      executionContext: Object,
+      styleSheet: StyleSheet,
+      registeredStylesFromClassName?: Array<string>
+    ) {
+      const { isStatic, lastClassName } = this
+      if (
+        areStylesCacheable &&
+        isStatic &&
+        lastClassName !== undefined &&
+        (registeredStylesFromClassName === undefined ||
+          registeredStylesFromClassName.length === 0)
+      ) {
         return lastClassName
       }
 
-      const flatCSS = flatten(this.rules, executionContext)
-      const name = generateRuleHash(this.componentId + flatCSS.join(''))
+      const flatCSS = flatten(
+        // $FlowFixMe
+        this.rules.concat(registeredStylesFromClassName),
+        executionContext
+      )
+      const joinedCSS = flatCSS.join('')
+      const name = generateRuleHash(joinedCSS)
 
-      if (!styleSheet.hasNameForId(componentId, name)) {
-        const css = stringifyRules(flatCSS, `.${name}`)
-        styleSheet.inject(this.componentId, css, name)
+      if (!styleSheet.hasNameForId(name)) {
+        styleSheet.registered[name] = joinedCSS
+        styleSheet.inject(name, stringifyRules(flatCSS, `.${name}`))
       }
-
       this.lastClassName = name
       return name
     }
-
-    static generateName(str: string): string {
-      return generateRuleHash(str)
-    }
   }
+  ComponentStyle.generateName = generateRuleHash
 
   return ComponentStyle
 }
