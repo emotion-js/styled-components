@@ -33,12 +33,13 @@ export default class ServerStyleSheet {
   constructor() {
     /* The master sheet might be reset, so keep a reference here */
     this.masterSheet = StyleSheet.master
-    this.instance = this.masterSheet.clone()
+    this.instance = new StyleSheet()
     this.closed = false
   }
 
   complete() {
     if (!this.closed) {
+      this.closed = true
     }
   }
 
@@ -59,7 +60,8 @@ export default class ServerStyleSheet {
 
   getStyleElement() {
     this.complete()
-    return this.instance.toReactElements()
+    const ele = this.instance.toReactElements()
+    return ele
   }
 
   interleaveWithNodeStream(readableStream: stream.Readable) {

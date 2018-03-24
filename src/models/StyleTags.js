@@ -112,25 +112,25 @@ const makeStyleTag = (
   return el
 }
 
-/* takes a css factory function and outputs an html styled tag factory */
-const wrapAsHtmlTag = (css: () => string, names: Names) => (
+/* takes in css and outputs an html style tag as a string */
+export const wrapAsHtmlTag = (css: string, names: string) => (
   additionalAttrs: ?string
 ): string => {
   const nonce = getNonce()
   const attrs = [
     nonce && `nonce="${nonce}"`,
-    `${SC_ATTR}="${stringifyNames(names)}"`,
+    `${SC_ATTR}="${names}"`,
     additionalAttrs,
   ]
 
   const htmlAttr = attrs.filter(Boolean).join(' ')
-  return `<style ${htmlAttr}>${css()}</style>`
+  return `<style ${htmlAttr}>${css}</style>`
 }
 
-/* takes a css factory function and outputs an element factory */
-const wrapAsElement = (css: () => string, names: Names) => () => {
+/* takes a css string and outputs an element */
+export const wrapAsElement = (css: string, names: string) => {
   const props = {
-    [SC_ATTR]: stringifyNames(names),
+    [SC_ATTR]: names,
   }
 
   const nonce = getNonce()
@@ -140,7 +140,7 @@ const wrapAsElement = (css: () => string, names: Names) => () => {
   }
 
   // eslint-disable-next-line react/no-danger
-  return <style {...props} dangerouslySetInnerHTML={{ __html: css() }} />
+  return <style {...props} dangerouslySetInnerHTML={{ __html: css }} />
 }
 
 const getIdsFromMarkersFactory = (markers: Object) => (): string[] =>
