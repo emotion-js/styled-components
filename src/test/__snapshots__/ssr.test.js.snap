@@ -2,7 +2,7 @@
 
 exports[`ssr should add a nonce to the stylesheet if webpack nonce is detected in the global scope 1`] = `"<h1 class=\\"sc-a b\\" data-reactroot=\\"\\">Hello SSR!</h1>"`;
 
-exports[`ssr should add a nonce to the stylesheet if webpack nonce is detected in the global scope 2`] = `"<style nonce=\\"foo\\" data-styled-components=\\"sc-global-2303210225 b\\">body{background:papayawhip;}.b{color:red;}</style>"`;
+exports[`ssr should add a nonce to the stylesheet if webpack nonce is detected in the global scope 2`] = `"<style nonce=\\"foo\\" data-styled-components=\\"sc-global-2303210225 sc-a b\\">body{background:papayawhip;}.sc-a {}.b{color:red;}</style>"`;
 
 exports[`ssr should allow global styles to be injected during rendering 1`] = `"<h1 class=\\"PageOne a\\" data-reactroot=\\"\\">Camera One!</h1>"`;
 
@@ -46,19 +46,13 @@ body{background:papayawhip;}
 
 exports[`ssr should extract both global and local CSS 1`] = `"<h1 class=\\"sc-a b\\" data-reactroot=\\"\\">Hello SSR!</h1>"`;
 
-exports[`ssr should extract both global and local CSS 2`] = `"<style data-styled-components=\\"sc-global-2303210225 b\\">body{background:papayawhip;}.b{color:red;}</style>"`;
+exports[`ssr should extract both global and local CSS 2`] = `"<style data-styled-components=\\"sc-global-2303210225 sc-a b\\">body{background:papayawhip;}.sc-a {}.b{color:red;}</style>"`;
 
 exports[`ssr should extract the CSS in a simple case 1`] = `"<h1 class=\\"sc-a b\\" data-reactroot=\\"\\">Hello SSR!</h1>"`;
 
-exports[`ssr should extract the CSS in a simple case 2`] = `"<style data-styled-components=\\"b\\">.b{color:red;}</style>"`;
+exports[`ssr should extract the CSS in a simple case 2`] = `"<style data-styled-components=\\"sc-a b\\">.sc-a {}.b{color:red;}</style>"`;
 
-exports[`ssr should interleave styles with rendered HTML when utilitizing streaming 1`] = `
-"<style data-styled-components=\\"b\\" data-styled-streamed=\\"true\\">
-/* sc-component-id: sc-global-2303210225 */
-body{background:papayawhip;}
-/* sc-component-id: sc-a */
-.sc-a {} .b{color:red;}</style><h1 class=\\"sc-a b\\" data-reactroot=\\"\\">Hello SSR!</h1>"
-`;
+exports[`ssr should interleave styles with rendered HTML when utilitizing streaming 1`] = `"<style data-styled-components=\\"sc-global-2303210225 sc-a b\\" data-styled-streamed=\\"true\\">body{background:papayawhip;}.sc-a {}.b{color:red;}</style><h1 class=\\"sc-a b\\" data-reactroot=\\"\\">Hello SSR!</h1>"`;
 
 exports[`ssr should render CSS in the order the components were defined, not rendered 1`] = `"<div data-reactroot=\\"\\"><h2 class=\\"TWO a\\"></h2><h1 class=\\"ONE b\\"></h1></div>"`;
 
@@ -73,16 +67,16 @@ exports[`ssr should render CSS in the order the components were defined, not ren
 exports[`ssr should return a generated React style element 1`] = `
 Object {
   "dangerouslySetInnerHTML": Object {
-    "__html": "body{background:papayawhip;}.b{color:red;}",
+    "__html": "body{background:papayawhip;}.sc-a {}.b{color:red;}",
   },
-  "data-styled-components": "sc-global-2303210225 b",
+  "data-styled-components": "sc-global-2303210225 sc-a b",
 }
 `;
 
 exports[`ssr should share global styles but keep renders separate 1`] = `"<h1 class=\\"PageOne a\\" data-reactroot=\\"\\">Camera One!</h1>"`;
 
-exports[`ssr should share global styles but keep renders separate 2`] = `"<style data-styled-components=\\"sc-global-2303210225 a\\">body{background:papayawhip;}.a{color:red;}</style>"`;
+exports[`ssr should share global styles but keep renders separate 2`] = `"<style data-styled-components=\\"sc-global-2303210225 PageOne a\\">body{background:papayawhip;}.PageOne {}.a{color:red;}</style>"`;
 
 exports[`ssr should share global styles but keep renders separate 3`] = `"<h2 class=\\"PageTwo b\\" data-reactroot=\\"\\">Camera Two!</h2>"`;
 
-exports[`ssr should share global styles but keep renders separate 4`] = `"<style data-styled-components=\\"sc-global-2303210225 b\\">body{background:papayawhip;}.b{color:blue;}</style>"`;
+exports[`ssr should share global styles but keep renders separate 4`] = `"<style data-styled-components=\\"sc-global-2303210225 PageTwo b\\">body{background:papayawhip;}.PageTwo {}.b{color:blue;}</style>"`;
