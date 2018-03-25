@@ -105,17 +105,24 @@ export default (ComponentStyle: Function, constructWithOptions: Function) => {
     }
 
     render() {
-      const theme = determineTheme(
-        this.props,
-        this.state.theme,
-        this.constructor.defaultProps
-      )
+      let theme
+
+      if (this.state.theme !== null) {
+        theme = determineTheme(
+          this.props,
+          this.state.theme,
+          this.constructor.defaultProps
+        )
+      } else {
+        theme = this.props.theme || {}
+      }
 
       const {
         attrs,
         componentStyle,
         styledComponentId,
         target,
+        warnTooManyClasses,
       } = this.constructor
       const styleSheet = this.context[CONTEXT_KEY] || StyleSheet.master
 
@@ -143,11 +150,21 @@ export default (ComponentStyle: Function, constructWithOptions: Function) => {
         )
       } else {
         const executionContext = this.buildExecutionContext(theme, this.props)
-        className += componentStyle.generateAndInjectStyles(
+        if (this.attrs.className) {
+          className += `${this.attrs.className} `
+        }
+        const generatedClassName = componentStyle.generateAndInjectStyles(
           executionContext,
           styleSheet,
           registeredStylesFromClassName
         )
+        className += generatedClassName
+        if (
+          process.env.NODE_ENV !== 'production' &&
+          warnTooManyClasses !== undefined
+        ) {
+          warnTooManyClasses(generatedClassName)
+        }
       }
 
       const { innerRef } = this.props

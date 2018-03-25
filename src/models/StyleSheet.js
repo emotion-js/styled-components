@@ -8,6 +8,7 @@ import {
   SC_STREAM_ATTR,
 } from '../constants'
 import { wrapAsElement, wrapAsHtmlTag } from './StyleTags'
+import getNonce from '../utils/nonce'
 
 /* determine the maximum number of components before tags are sharded */
 // let MAX_SIZE
@@ -45,7 +46,11 @@ class StyleSheet {
     this.registered = {}
     this.capacity = 1
     this.clones = []
-    this.sheet = new EmotionStyleSheet({ key: 'styled' })
+    this.sheet = new EmotionStyleSheet({
+      key: 'styled',
+      // $FlowFixMe
+      nonce: getNonce() !== null ? getNonce() : undefined,
+    })
     if (IS_BROWSER) {
       this.sheet.inject()
     }

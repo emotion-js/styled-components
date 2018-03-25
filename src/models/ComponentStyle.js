@@ -57,9 +57,10 @@ export default (
     isStatic: boolean
     lastClassName: ?string
     static generateName: string => string
-    constructor(rules: RuleSet, attrs?: Object) {
+    constructor(rules: RuleSet, attrs?: Object, componentId: string) {
       this.rules = rules
       this.isStatic = !isHRMEnabled && isStaticRules(rules, attrs)
+      this.componentId = componentId
     }
 
     generateAndInjectStyles(
@@ -85,7 +86,11 @@ export default (
       )
       const joinedCSS = flatCSS.join('')
       const name = generateRuleHash(joinedCSS)
-
+      if (process.env.NODE_ENV !== 'production') {
+        if (!styleSheet.hasNameForId(this.componentId)) {
+          styleSheet.inject(this.componentId, [`.${this.componentId} {}`])
+        }
+      }
       if (!styleSheet.hasNameForId(name)) {
         styleSheet.registered[name] = joinedCSS
         styleSheet.inject(name, stringifyRules(flatCSS, `.${name}`))
