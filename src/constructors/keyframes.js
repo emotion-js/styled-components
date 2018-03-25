@@ -18,10 +18,9 @@ export default (
   const styleSheet = StyleSheet.master
   const rules = css(...arr)
   const name = nameGenerator(hashStr(replaceWhitespace(JSON.stringify(rules))))
-  const id = `sc-keyframes-${name}`
 
-  if (!styleSheet.hasNameForId(id)) {
-    styleSheet.inject(id, stringifyRules(rules, name, '@keyframes'), name)
+  if (!styleSheet.hasNameForId(name)) {
+    styleSheet.inject(name, stringifyRules(rules, name, '@keyframes'))
   }
 
   return name

@@ -49,7 +49,7 @@ describe('basic', () => {
     expectCSSMatches('.sc-a { } .b { color:blue; }')
   })
 
-  it('should inject only once for a styled component, no matter how often it\'s mounted', () => {
+  it("should inject only once for a styled component, no matter how often it's mounted", () => {
     const Comp = styled.div`
       color: blue;
     `
@@ -90,8 +90,10 @@ describe('basic', () => {
       const Comp = styled.div``
 
       class Wrapper extends Component {
-        testRef: any;
-        innerRef = (comp) => { this.testRef = comp }
+        testRef: any
+        innerRef = comp => {
+          this.testRef = comp
+        }
 
         render() {
           return <Comp innerRef={this.innerRef} />
@@ -115,10 +117,16 @@ describe('basic', () => {
       const OuterComponent = styled(InnerComponent)``
 
       class Wrapper extends Component {
-        testRef: any;
+        testRef: any
 
         render() {
-          return <OuterComponent innerRef={(comp) => { this.testRef = comp }} />
+          return (
+            <OuterComponent
+              innerRef={comp => {
+                this.testRef = comp
+              }}
+            />
+          )
         }
       }
 
@@ -134,13 +142,12 @@ describe('basic', () => {
 
       class Wrapper extends Component {
         render() {
-          return <OuterComponent className="test"/>
+          return <OuterComponent className="test" />
         }
       }
 
       const wrapper = mount(<Wrapper />)
-      expect(wrapper.find(InnerComponent).prop('className'))
-        .toBe('test sc-a b')
+      expect(wrapper.find(InnerComponent).prop('className')).toBe('test sc-a b')
     })
 
     it('should pass the innerRef to the wrapped styled component', () => {
@@ -148,8 +155,10 @@ describe('basic', () => {
       const OuterComponent = styled(InnerComponent)``
 
       class Wrapper extends Component {
-        testRef: any;
-        innerRef = (comp) => { this.testRef = comp }
+        testRef: any
+        innerRef = comp => {
+          this.testRef = comp
+        }
 
         render() {
           return <OuterComponent innerRef={this.innerRef} />
@@ -166,15 +175,26 @@ describe('basic', () => {
       expect(innerComponent.prop('innerRef')).toBe(wrapperNode.innerRef)
     })
 
-    it('should respect the order of StyledComponent creation for CSS ordering', () => {
-      const FirstComponent = styled.div`color: red;`
-      const SecondComponent = styled.div`color: blue;`
+    it('should have the styles deepest in the tree be the least specific', () => {
+      const InnerComponent = styled.div`
+        color: red;
+      `
+      const WrapperToMakeSureThisIsActuallyTestedInCaseOfOptimizations = props => (
+        <InnerComponent {...props} />
+      )
+      const OuterComponent = styled(
+        WrapperToMakeSureThisIsActuallyTestedInCaseOfOptimizations
+      )`
+        color: hotpink;
+      `
 
-      // NOTE: We're mounting second before first and check if we're breaking their order
-      shallow(<SecondComponent />)
-      shallow(<FirstComponent />)
+      expect(mount(<OuterComponent />).html()).toBe(
+        '<div class="sc-b sc-a d"></div>'
+      )
 
-      expectCSSMatches('.sc-a {} .d { color:red; } .sc-b {} .c { color:blue; }')
+      expectCSSMatches(
+        '.sc-b{ } .c{ color:hotpink; } .sc-a{ } .d{ color:red; color:hotpink; } '
+      )
     })
 
     it('handle media at-rules inside style rules', () => {
@@ -187,7 +207,9 @@ describe('basic', () => {
       `
 
       shallow(<Comp />)
-      expectCSSMatches('.sc-a{ } @media (min-width:500px){ .b > *{ color:pink; } } ')
+      expectCSSMatches(
+        '.sc-a{ } @media (min-width:500px){ .b > *{ color:pink; } } '
+      )
     })
   })
 })

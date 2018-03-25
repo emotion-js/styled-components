@@ -50,6 +50,8 @@ class StyleSheet {
       key: 'styled',
       // $FlowFixMe
       nonce: getNonce() !== null ? getNonce() : undefined,
+      // $FlowFixMe
+      container: target,
     })
     if (IS_BROWSER) {
       this.sheet.inject()

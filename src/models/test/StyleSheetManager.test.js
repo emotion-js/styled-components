@@ -22,7 +22,9 @@ describe('StyleSheetManager', () => {
 
   it('should use given stylesheet instance', () => {
     const sheet = new ServerStyleSheet()
-    const Title = styled.h1`color: palevioletred;`
+    const Title = styled.h1`
+      color: palevioletred;
+    `
     renderToString(
       <StyleSheetManager sheet={sheet.instance}>
         <Title />
@@ -33,32 +35,35 @@ describe('StyleSheetManager', () => {
 
   it('should render its child', () => {
     const target = document.head
-    const Title = styled.h1`color: palevioletred;`
+    const Title = styled.h1`
+      color: palevioletred;
+    `
     const child = <Title />
     const renderedComp = shallow(
-      <StyleSheetManager target={target}>
-        {child}
-      </StyleSheetManager>
+      <StyleSheetManager target={target}>{child}</StyleSheetManager>
     )
     expect(renderedComp.contains(child)).toEqual(true)
   })
 
   it('should append style to given target', () => {
     const target = document.body
-    const Title = styled.h1`color: palevioletred;`
+    const Title = styled.h1`
+      color: palevioletred;
+    `
     class Child extends React.Component {
       componentDidMount() {
-        // $FlowFixMe
-        const styles = target.querySelector('style').textContent
-        expect(styles.includes(`palevioletred`)).toEqual(true)
+        expect(target.textContent.includes(`palevioletred`)).toEqual(true)
       }
-      render() { return <Title /> }
+      render() {
+        return <Title />
+      }
     }
     mount(
       <StyleSheetManager target={target}>
         <Child />
       </StyleSheetManager>
     )
+    expect(document.querySelector('html')).toMatchSnapshot()
   })
 
   it('should append style to given target in iframe', () => {
@@ -69,14 +74,18 @@ describe('StyleSheetManager', () => {
     // $FlowFixMe
     iframe.contentDocument.body.appendChild(app)
     const target = iframe.contentDocument.head
-    const Title = styled.h1`color: palevioletred;`
+    const Title = styled.h1`
+      color: palevioletred;
+    `
     class Child extends React.Component {
       componentDidMount() {
         // $FlowFixMe
         const styles = target.querySelector('style').textContent
         expect(styles.includes(`palevioletred`)).toEqual(true)
       }
-      render() { return <Title /> }
+      render() {
+        return <Title />
+      }
     }
     mount(
       <StyleSheetManager target={target}>
@@ -98,7 +107,7 @@ describe('StyleSheetManager', () => {
     `
     mount(
       <div>
-        <ONE/>
+        <ONE />
         <StyleSheetManager target={document.head}>
           <div>
             <TWO />
@@ -111,9 +120,9 @@ describe('StyleSheetManager', () => {
     )
 
     // $FlowFixMe
-    expect(document.head.innerHTML).toMatchSnapshot()
+    expect(document.head).toMatchSnapshot()
     // $FlowFixMe
-    expect(document.body.innerHTML).toMatchSnapshot()
+    expect(document.body).toMatchSnapshot()
   })
 
   describe('ssr', () => {
@@ -127,14 +136,20 @@ describe('StyleSheetManager', () => {
       `
       class Wrapper extends React.Component {
         state = {
-          targetRef: null
+          targetRef: null,
         }
         render() {
           return (
-            <div ref={(el) => { this.setState({ targetRef: el }) }}>
-              {this.state.targetRef && <StyleSheetManager target={this.state.targetRef}>
-                <TWO />
-              </StyleSheetManager>}
+            <div
+              ref={el => {
+                this.setState({ targetRef: el })
+              }}
+            >
+              {this.state.targetRef && (
+                <StyleSheetManager target={this.state.targetRef}>
+                  <TWO />
+                </StyleSheetManager>
+              )}
             </div>
           )
         }
