@@ -6,6 +6,7 @@ import stream from 'stream'
 import { IS_BROWSER, SC_STREAM_ATTR } from '../constants'
 import StyleSheet from './StyleSheet'
 import StyleSheetManager from './StyleSheetManager'
+import { wrapAsHtmlTag } from './StyleTags'
 
 declare var __SERVER__: boolean
 
@@ -33,12 +34,14 @@ export default class ServerStyleSheet {
   constructor() {
     /* The master sheet might be reset, so keep a reference here */
     this.masterSheet = StyleSheet.master
-    this.instance = new StyleSheet()
+    this.instance = this.masterSheet.clone()
     this.closed = false
   }
 
   complete() {
     if (!this.closed) {
+      const index = this.masterSheet.clones.indexOf(this.instance)
+      this.masterSheet.clones.splice(index, 1)
       this.closed = true
     }
   }
@@ -60,8 +63,7 @@ export default class ServerStyleSheet {
 
   getStyleElement() {
     this.complete()
-    const ele = this.instance.toReactElements()
-    return ele
+    return this.instance.toReactElements()
   }
 
   interleaveWithNodeStream(readableStream: stream.Readable) {
@@ -71,25 +73,26 @@ export default class ServerStyleSheet {
 
     /* the tag index keeps track of which tags have already been emitted */
     const { instance } = this
-    let instanceTagIndex = 0
-
     const streamAttr = `${SC_STREAM_ATTR}="true"`
     const ourStream = new stream.Readable()
     // $FlowFixMe
     ourStream._read = () => {}
+    const alreadyInsertedValues = {}
 
     readableStream.on('data', chunk => {
-      const { tags } = instance
-      let html = ''
+      let css = ''
+      let ids = ''
 
-      /* r etrieve html for each new style tag */
-      for (; instanceTagIndex < tags.length; instanceTagIndex += 1) {
-        const tag = tags[instanceTagIndex]
-        html += tag.toHTML(streamAttr)
-      }
-
-      /* force our StyleSheets to emit entirely new tags */
-      instance.sealAllTags()
+      Object.keys(instance.inserted).forEach(key => {
+        if (alreadyInsertedValues[key] === undefined) {
+          // $FlowFixMe the value of this will only be a boolean in the browser
+          css += instance.inserted[key]
+          ids += ` ${key}`
+          alreadyInsertedValues[key] = true
+        }
+      })
+      ids = ids.substring(1)
+      const html = wrapAsHtmlTag(css, ids)(streamAttr)
       /* prepend style html to chunk */
       ourStream.push(html + chunk)
     })

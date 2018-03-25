@@ -112,7 +112,7 @@ const makeStyleTag = (
   return el
 }
 
-/* takes in css and outputs an html style tag as a string */
+/* takes in css and outputs an html style tag factory */
 export const wrapAsHtmlTag = (css: string, names: string) => (
   additionalAttrs: ?string
 ): string => {
@@ -424,46 +424,4 @@ export const makeTag = (
   }
 
   return makeServerTag()
-}
-
-/* wraps a given tag so that rehydration is performed once when necessary */
-export const makeRehydrationTag = (
-  tag: Tag<any>,
-  els: HTMLStyleElement[],
-  extracted: ExtractedComp[],
-  names: string[],
-  immediateRehydration: boolean
-): Tag<any> => {
-  /* rehydration function that adds all rules to the new tag */
-  const rehydrate = once(() => {
-    /* add all extracted components to the new tag */
-    for (let i = 0; i < extracted.length; i += 1) {
-      const { componentId, cssFromDOM } = extracted[i]
-      const cssRules = splitByRules(cssFromDOM)
-      tag.insertRules(componentId, cssRules)
-    }
-
-    /* remove old HTMLStyleElements, since they have been rehydrated */
-    for (let i = 0; i < els.length; i += 1) {
-      const el = els[i]
-      if (el.parentNode) {
-        el.parentNode.removeChild(el)
-      }
-    }
-  })
-
-  if (immediateRehydration) rehydrate()
-
-  return {
-    ...tag,
-    /* add rehydration hook to insertion methods */
-    insertMarker: id => {
-      rehydrate()
-      return tag.insertMarker(id)
-    },
-    insertRules: (id, cssRules, name) => {
-      rehydrate()
-      return tag.insertRules(id, cssRules, name)
-    },
-  }
 }

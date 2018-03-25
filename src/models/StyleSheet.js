@@ -31,6 +31,7 @@ class StyleSheet {
   registered: { [string]: string }
   capacity: number
   sheet: EmotionStyleSheet
+  clones: Array<StyleSheet>
 
   constructor(
     target: ?HTMLElement = IS_BROWSER ? document.head : null,
@@ -43,6 +44,7 @@ class StyleSheet {
     this.inserted = {}
     this.registered = {}
     this.capacity = 1
+    this.clones = []
     this.sheet = new EmotionStyleSheet({ key: 'styled' })
     if (IS_BROWSER) {
       this.sheet.inject()
@@ -66,9 +68,13 @@ class StyleSheet {
     for (let i = 0; i < nodesSize; i += 1) {
       // $FlowFixMe: We can trust that all elements in this query are style elements
       const el = (nodes[i]: HTMLStyleElement)
+      if (el.getAttribute(SC_STREAM_ATTR)) {
+        // $FlowFixMe
+        this.target.appendChild(el)
+      }
       const elNames = (el.getAttribute(SC_ATTR) || '').trim().split(/\s+/)
-      elNames.forEach(elName => {
-        this.inserted[elName] = true
+      elNames.forEach(name => {
+        this.addNameToCache(name, true)
       })
     }
     return this
@@ -90,10 +96,27 @@ class StyleSheet {
   static reset(forceServer?: boolean = false) {
     master = new StyleSheet(undefined, forceServer).rehydrate()
   }
-
-  /* caching layer checking id+name to already have a corresponding tag and injected rules */
+  /* adds "children" to the StyleSheet that inherit all of the parents' rules
+   * while their own rules do not affect the parent */
+  clone() {
+    const sheet = new StyleSheet(this.target, this.forceServer)
+    /* add to clone array */
+    this.clones.push(sheet)
+    sheet.registered = this.registered
+    sheet.inserted = { ...this.inserted }
+    return sheet
+  }
+  /* check if a name's styles are inserted already */
+  // TODO: rename this change change all the places it's used
   hasNameForId(name: string) {
     return this.inserted[name] !== undefined
+  }
+
+  addNameToCache(name: string, css: string | true) {
+    this.inserted[name] = css
+    this.clones.forEach(clone => {
+      clone.addNameToCache(name, css)
+    })
   }
 
   /* injects rules for a given id with a name that will need to be cached */
@@ -104,37 +127,37 @@ class StyleSheet {
           this.sheet.insert(rule)
         })
       }
-      this.inserted[name] = cssRules.join('')
+      this.addNameToCache(name, cssRules.join(''))
     }
   }
 
   /* removes all rules for a given id, which doesn't remove its marker but resets it */
-  remove(id: string) {
-    const tag = this.tagMap[id]
-    if (tag === undefined) return
+  // remove(id: string) {
+  //   const tag = this.tagMap[id]
+  //   if (tag === undefined) return
 
-    const { clones } = this
-    for (let i = 0; i < clones.length; i += 1) {
-      clones[i].remove(id)
-    }
+  //   const { clones } = this
+  //   for (let i = 0; i < clones.length; i += 1) {
+  //     clones[i].remove(id)
+  //   }
 
-    /* remove all rules from the tag */
-    tag.removeRules(id)
-    /* ignore possible rehydrated names */
-    this.ignoreRehydratedNames[id] = true
-    /* delete possible deferred rules */
-    delete this.deferred[id]
-  }
+  //   /* remove all rules from the tag */
+  //   tag.removeRules(id)
+  //   /* ignore possible rehydrated names */
+  //   this.ignoreRehydratedNames[id] = true
+  //   /* delete possible deferred rules */
+  //   delete this.deferred[id]
+  // }
 
   toHTML() {
     const { css, ids } = this.toCSSAndIds()
 
-    return wrapAsHtmlTag(css, ids)
+    return wrapAsHtmlTag(css, ids)('')
   }
 
   toReactElements() {
     const { css, ids } = this.toCSSAndIds()
-    return wrapAsElement(css, ids)
+    return [React.cloneElement(wrapAsElement(css, ids), { key: '1' })]
   }
   toCSSAndIds() {
     let css = ''
